@@ -1,8 +1,12 @@
 // const { Conflict } = require("http-errors");
 const bcrypt = require("bcryptjs");
 const gravatar = require("gravatar");
+const uniqid = require("uniqid");
 
 const { User } = require("../../models");
+const { sendEmail } = require("../../helpers");
+
+const { BASE_URL } = process.env;
 
 const register = async (req, res, next) => {
   try {
@@ -21,12 +25,23 @@ const register = async (req, res, next) => {
 
     const avatarUrl = gravatar.url(email);
 
+    const verificationToken = uniqid();
+
     const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
     const result = await User.create({
       email,
       password: hashPassword,
       avatarUrl,
+      verificationToken,
     });
+
+    const mail = {
+      to: email,
+      subject: "Verify email",
+      html: `<a href="${BASE_URL}/api/users/verify/${verificationToken}" target="_blank">Click to verify your email<a/>`,
+    };
+
+    sendEmail(mail);
 
     res.status(201).json({
       status: "Success",
