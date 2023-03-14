@@ -22,7 +22,7 @@ const sendEmail = async (data) => {
     from: "sdm17@meta.ua",
   };
 
-  transporter.sendMail(emailOptions);
+  await transporter.sendMail(emailOptions);
   return true;
 };
 
